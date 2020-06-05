@@ -2,7 +2,7 @@
 My public repo with tools for the Zammad helpdesk ticketing software
 
 In this repo I publish a few tools I created for the Zammad application that helps me in my daily business.
-I am a full-time Linux and Open Source consultant and I sue Zammad a LOT!
+I am a full-time Linux and Open Source consultant and I use Zammad a LOT!
 
 What is in this repo?
 
