@@ -52,6 +52,7 @@ The application looks like this (client names have been obfuscated for obvious r
 > For full disclosure: I am not a DBA. The SQL query in the python program is ugly AF! I know.
 > There has to be a better and simpler way to get the same results.
 > What can I say? It worked and I just was too busy. 
+> Also see: https://github.com/kwoot/public_zammad_tools/issues/1
 
 ## Installing
 
