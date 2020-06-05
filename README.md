@@ -33,7 +33,7 @@ Let's face it, I am sometimes chaotic, borderline ADD. Maybe I am ADD, I honestl
 Recently I realised I needed a tool to help me focus on my work.
 I wanted something that at day start would show my how I am doing workwise.
 Basically an overview of the current week with the following information:
-- Client name
+- Client name if there is an hour target defined, or there has been some time spend this week.
 - Some target I created with the amount of work I would like to do for this client in a week at a minimum.
 - The amount I have worked for that particular client already in this week.
 - And a bar graph showing me my progress towards my target.
@@ -59,10 +59,31 @@ The application looks like this (client names have been obfuscated for obvious r
 To install this application you need a few things.
 - The psycopg2 python driver for PostgreSQL
 - The python tkinter gui library
-
+- you MUST add an object to the Zammad system:
+  - Go to the management section of Zammad.
+  - Select 'Objects' in the "System" section.
+  - Select 'Organization' at the top.
+  - Click on the 'New Attribute' button.
+  - In the 'NAME' field enter 'weeklyhours'. This has to be this text or your query will not work (unless you edit weekly.py of course)
+  - In the 'DISPLAY' field enter something sensible like 'Weekly Hour target'
+  - Make sure the 'ACTIVE' field shows 'active'.
+  - Make sure the 'FORMAT' field shows 'Text'! This is the only way to be able to enter floating point values here.
+  - Optionally enter a default value you like
+  - Select a sensible 'MAXLENGTH' value. I would suggest at least '3'.
+  - In the access rights matrix below check all checkboxes, unless you have good reason not to.
+  
 Obviously you have to edit the weekly.conf configuration file.
 
 The shell script also needs editing to get a good DISPLAY variable setting. My setting is probably not your setting.
+
+## Using the application
+
+After everything is configured properly, go into the management section of Zammad and enter an hour target budget for those 
+organizations you would like to see a target. You do NOT have to enter a target for every organization in your system.
+
+Insert a call to weekly.sh into the crontab of your user and voila, a reminder appears at the start of every working day.
+Crontab line example: 0 8 * * 1-5 /bin/bash /home/username/weekly.sh
+
 
 Have fun!
 Jeroen Baten
