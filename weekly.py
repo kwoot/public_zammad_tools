@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-version = "1.00"
+version = "1.10"
+
 
 import logging
 
@@ -35,17 +36,6 @@ import hashlib
 logging.debug("Start initialisation")
 now = time.strftime("%c")
 logging.debug("Current date & time " + time.strftime("%c"))
-
-# This is the only query we use
-query = """select  o.name , to_char(round(sum(tm.time_unit/60),2), 'FM99990.00') as Time
-from 
-        ticket_time_accountings as tm,
-        tickets as t,
-        organizations as o
-where   tm.ticket_id=t.id and t.organization_id=o.id and
-       extract(week from tm.created_at ) = extract(week from current_date) -2
-group by o.id
-order by o.id ; """
 
 class Weekly(tk.Frame):
 
@@ -91,10 +81,7 @@ class Weekly(tk.Frame):
         :return: list of dictionaries with fieldnames and values
         """
         self.whereami(inspect.stack()[0][3])
-        # with sqlite3.connect(self.db_filename) as conn:
-        #     cursor = conn.cursor()
-        #     query_result = cursor.execute(query, parameters)
-        #     conn.commit()
+
         try:
             conn = psycopg2.connect(dbname=self.DB_DATABASE, user=self.DB_USER, password=self.DB_PASSWORD,
                                     host=self.DB_HOST)
@@ -146,6 +133,7 @@ class Weekly(tk.Frame):
                             organizations as o2
                     where   tm2.ticket_id=t2.id and t2.organization_id=o2.id and
                     o2.id=o.id and
+                           extract(year from tm2.created_at) = extract(year from current_date) and
                            extract(week from tm2.created_at ) = extract(week from current_date) - %s ) as Time        
                     from 
                             ticket_time_accountings as tm,
