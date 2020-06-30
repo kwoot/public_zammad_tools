@@ -97,12 +97,13 @@ do
 	  t.number as Ticket, \
 		t.title as Title,
     concat( u.firstname,' ', u.lastname) as Name ,
-	to_char(round(sum(tm.time_unit/60),2), 'FM99990.00') as Time \
+	to_char(round(sum(tm.time_unit/60),2), 'FM99990.00') as Time, \
+		  ( select string_agg( tag_items.name,', ') from tags, tag_items where  tags.o_id=t.id and tags.tag_item_id=tag_items.id)   as Tags \
 		from organizations as o, tickets as t, ticket_articles as ta,  ticket_time_accountings as tm, users as u \
     	where o.name = '${org}' and t.organization_id=o.id and ta.ticket_id=t.id and tm.ticket_article_id=ta.id  \
     	and   date(ta.created_at) >= '${year}-${startmonth}-01' and   date(ta.created_at) <  '${year2}-${endmonth}-01' \
       and t.customer_id=u.id \
-      group by t.number, t.title, u.firstname, u.lastname \
+      group by t.id, t.number, t.title, u.firstname, u.lastname \
 	  	order by t.number asc ;"
 
   #echo "$query" | tr '\n' ' ' | tr '\t' ' ' | sed -e 's/ \+/ /gp'
