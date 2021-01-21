@@ -23,6 +23,9 @@ This html file contains your company logo, a small header with organisation name
 The first list is a list of tickets you entered time on during the period entered.
 The second list contains all the first lines of the articles, shopped of when they are too long and the time spend on that article.
 
+I finally figured out how to administrate driving distance per ticket article if I happen to spend time outside the office. The time_unit field in ticket_time_accountings is numeric(6,2). I could enter the distance as the part after the decimal separator for distance up to 99 units (Km, miles).
+Of course have to split the field and sum separately. Maybe some day....
+
 ## Installing
 
 This script needs a configured .pgpass file in your home directory to be able to run.
