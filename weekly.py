@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-version = "1.10"
+version = "1.20"
 
 
 import logging
@@ -139,8 +139,10 @@ class Weekly(tk.Frame):
                             ticket_time_accountings as tm,
                             tickets as t,
                             organizations as o
-                    where   tm.ticket_id=t.id and t.organization_id=o.id 
-                                   or o.weeklyhours is not null
+                     where  tm.ticket_id=t.id 
+                            and t.organization_id=o.id 
+                            and o.weeklyhours is not null
+                            and o.active is True
                     group by o.id
                     order by o.id 
         """
