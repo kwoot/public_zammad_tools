@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-version = "1.20"
+version = "1.30"
 
 
 import logging
@@ -29,9 +29,11 @@ from tkinter import ttk
 import psycopg2
 import configparser
 from pprint import pprint, pformat
+import locale
 import inspect
 import time
 import hashlib
+import datetime
 
 logging.debug("Start initialisation")
 now = time.strftime("%c")
@@ -125,27 +127,26 @@ class Weekly(tk.Frame):
         :return:
         """
         self.whereami(inspect.stack()[0][3])
-        # This query is ugly AF. Maybe somebody can clean this up someday?
+         # This query is maybe no more ugly AF. But could probably be improved.
         query = """ select 
                     o.name , o.weeklyhours, 
                     ( select to_char(round(sum(tm2.time_unit/60),2), 'FM99990.00') from ticket_time_accountings as tm2,
                             tickets as t2,
                             organizations as o2
-                    where   tm2.ticket_id=t2.id and t2.organization_id=o2.id and
-                    o2.id=o.id and
+                        where   tm2.ticket_id=t2.id and 
+                            t2.organization_id=o2.id and
+                            o2.id=o.id and
                            extract(year from tm2.created_at) = extract(year from current_date) and
                            extract(week from tm2.created_at ) = extract(week from current_date) - %s ) as Time        
-                    from 
-                            ticket_time_accountings as tm,
-                            tickets as t,
-                            organizations as o
-                     where  tm.ticket_id=t.id 
-                            and t.organization_id=o.id 
-                            and o.weeklyhours is not null
-                            and o.active is True
+                    from                   
+                        organizations as o
+                    where    
+                        o.weeklyhours is not null
+                        and o.active is True
                     group by o.id
                     order by o.id 
         """
+
         weekdict = self.execute_db_query(query, (history_step,))
         return weekdict
 
@@ -160,13 +161,16 @@ class Weekly(tk.Frame):
 
         label = "This should not be visible"
 
+        my_date = datetime.date.today()
+        week_number = my_date.isocalendar()[1]
+
         dictlastweek = self.get_week_dicts(1)
-        self.lastweek = ttk.LabelFrame(self, text='Last week', style='BLUE.TLabelframe')
+        self.lastweek = ttk.LabelFrame(self, text=' Last week (# '+str(week_number-1)+')', style='BLUE.TLabelframe')
         self.draw_my_frame(dictlastweek, self.lastweek, 1)
         self.lastweek.pack(side=tk.TOP)
 
         dictthisweek = self.get_week_dicts(0)
-        self.thisweek = ttk.LabelFrame(self, text='This week', style='BLUE.TLabelframe')
+        self.thisweek = ttk.LabelFrame(self, text=' This week (# '+str(week_number)+')', style='BLUE.TLabelframe')
         self.draw_my_frame(dictthisweek, self.thisweek, 0)
         self.thisweek.pack(side=tk.TOP)
 
@@ -230,15 +234,31 @@ class Weekly(tk.Frame):
                     self.label.pack(side="left")
 
                     # Decide on bar color
+                    # Only do this on current week
+                    # Monday = 0/zero
+                    my_date = datetime.date.today()
+                    day_of_week = my_date.weekday()
+                    # We use a 5 day workweek, starting on Monday.
+                    # So, devide the target by 5 for daily progress
+                    # Monday: 0 needs to be done
+                    # Tueday: 1/5 needs to be done, etc.
+                    # Wednesday: 2/5 needs to be done
+                    if day_of_week == 0:
+                        ontrack=0
+                    else:
+                        ontrack = (day_of_week/5) * target
+
                     if week == 0:
+                        # Only change color if there is a target defined (weeklyhours setting in Zammad ticket object)
                         if target > 0:
-                            if done < target:
+                            if done < ontrack:
                                 #pprint("make red 2")
                                 color = "red.Horizontal.TProgressbar"
                             else:
                                 #pprint("make green 2")
                                 color = "green.Horizontal.TProgressbar"
                         else:
+                            # No target weeklyhours defined, so always good.
                             #pprint("make orange 2")
                             color = "orange.Horizontal.TProgressbar"
                     else:

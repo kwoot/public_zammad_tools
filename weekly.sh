@@ -2,7 +2,10 @@
 
 cd /home/jeroen/Projecten/Zammad
 
-export DISPLAY=:50.0
+export DISPLAY=:2.0
+
+
+export DISPLAY
 
 . venv/bin/activate
 
