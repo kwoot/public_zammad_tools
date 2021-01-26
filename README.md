@@ -41,8 +41,8 @@ Basically an overview of the current week with the following information:
 - The amount I have worked for that particular client already in this week.
 - And a bar graph showing me my progress towards my target.
 - And the bar graph can have a color:
-  - Red when there is a target but I'm not there yet, 
-  - Green when I have passed my target \0/
+  - Red when there is a target but I'm below the amount I should have done by now, 
+  - Green when I am on track towards my weekly target \0/
   - Orange when there is no target defined.
 
 After having used it for a couple if days I realised I also wanted to see the previous week.
