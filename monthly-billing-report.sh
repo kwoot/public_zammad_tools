@@ -58,7 +58,7 @@ IFS=$'\n'
 
 for organization in ${organizations}
 do
-  org=$( echo $organization | tr -d '[:space:]')
+  org=$( echo $organization | awk '{$1=$1};1' )
   echo -n "Doing: ${org}"
   # Determine number of results
   count=$( psql -h 10.1.1.1 -U zammad zammad --tuples-only  -c "select count(*)   \
