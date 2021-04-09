@@ -92,20 +92,26 @@ do
 	echo "<p></p>"    >>  ${reportfile}
   
   echo "<h2>Ticket list summary</h2>" >>  ${reportfile}
-
-  query="select  \
-	  t.number as Ticket, \
-		t.title as Title,
-    concat( u.firstname,' ', u.lastname) as Name ,
-	to_char(round(sum(tm.time_unit/60),2), 'FM99990.00') as Time, \
-		  ( select string_agg( tag_items.name,', ') from tags, tag_items where  tags.o_id=t.id and tags.tag_item_id=tag_items.id)   as Tags \
-		from organizations as o, tickets as t, ticket_articles as ta,  ticket_time_accountings as tm, users as u \
-    	where o.name = '${org}' and t.organization_id=o.id and ta.ticket_id=t.id and tm.ticket_article_id=ta.id  \
-    	and   date(ta.created_at) >= '${year}-${startmonth}-01' and   date(ta.created_at) <  '${year2}-${endmonth}-01' \
-      and t.customer_id=u.id \
-      group by t.id, t.number, t.title, u.firstname, u.lastname \
-	  	order by t.number asc ;"
-
+  read -r -d '' query <<SQL
+    select  
+           t.number as Ticket, 
+           t.title as Title,
+           concat( u.firstname,' ', u.lastname) as Name ,
+	   to_char(round(sum(tm.time_unit/60),2), 'FM99990.00') as Time, 
+           ( select string_agg( tag_items.name,', ') from tags, tag_items where  tags.o_id=t.id and tags.tag_item_id=tag_items.id)   as Tags 
+	 from 
+	   organizations as o, 
+	   tickets as t, 
+	   ticket_articles as ta,  
+	   ticket_time_accountings as tm, 
+	   users as u 
+    	 where 
+    	   o.name = '${org}' and t.organization_id=o.id and ta.ticket_id=t.id and tm.ticket_article_id=ta.id  
+           and   date(ta.created_at) >= '${jaar}-${startmaand}-01' and   date(ta.created_at) <  '${jaar2}-${eindmaand}-01' 
+           and t.customer_id=u.id 
+         group by t.id, t.number, t.title, u.firstname, u.lastname 
+	 order by t.number asc ;
+SQL
   #echo "$query" | tr '\n' ' ' | tr '\t' ' ' | sed -e 's/ \+/ /gp'
 
   psql -h 10.1.1.1 -U zammad zammad --html  -c "${query}"  >>  ${reportfile}
@@ -121,24 +127,24 @@ do
 
         # old stuff left(regexp_replace(ta.body,E'<[^>]+>', '', 'gi'),${width}) as Text, \
 
-
-  query="select  \
-		coalesce(t.number, 'Total :') as Ticket, \
-    to_char(ta.created_at,'DD-MON HH24:MI') as Date, \
-    replace(  \
-                ( \
-                  case  \
-                    when (length(ta.body)<=80 ) then left(regexp_replace(ta.body,E'<[^>]+>', '', 'gi'),${width}) \
-                    else concat(left(regexp_replace(ta.body,E'<[^>]+>', '', 'gi'),${width}) ,'..>')  \
+  read -r -d '' query <<SQL
+  select  
+	coalesce(t.number, 'Total :') as Ticket, 
+    to_char(ta.created_at,'DD-MON HH24:MI') as Date, 
+    replace(  
+                ( 
+                  case  
+                    when (length(ta.body)<=${width} ) then left(regexp_replace(ta.body,E'<[^>]+>', '', 'gi'),${width}) 
+                    else concat(left(regexp_replace(ta.body,E'<[^>]+>', '', 'gi'),${width}) ,'..>')  
                   end ) 
-      ,'<br />','') as Text, \
-		  to_char(round(sum(tm.time_unit/60),2), 'FM99990.00') as Time \
-		from organizations as o, tickets as t, ticket_articles as ta,  ticket_time_accountings as tm \
-    	where o.name = '${org}' and t.organization_id=o.id and ta.ticket_id=t.id and tm.ticket_article_id=ta.id  \
-    	and   date(ta.created_at) >= '${year}-${startmonth}-01' and   date(ta.created_at) <  '${year2}-${endmonth}-01' \
-		group by grouping sets ( ( t.number, ta.created_at, ta.body, tm.time_unit),() ) 
-	  	order by t.number asc , ta.created_at asc;"
-
+      ,'<br />','') as Text, 
+    to_char(round(sum(tm.time_unit/60),2), 'FM99990.00') as Time 
+  from organizations as o, tickets as t, ticket_articles as ta,  ticket_time_accountings as tm 
+  where o.name = '${org}' and t.organization_id=o.id and ta.ticket_id=t.id and tm.ticket_article_id=ta.id  
+   	and   date(ta.created_at) >= '${jaar}-${startmaand}-01' and   date(ta.created_at) <  '${jaar2}-${eindmaand}-01' 
+	group by grouping sets ( ( t.number, ta.created_at, ta.body, tm.time_unit),() ) 
+  	order by t.number asc , ta.created_at asc;
+SQL
   #echo "$query" | tr '\n' ' ' | tr '\t' ' ' | sed -e 's/ \+/ /gp'
 
 	psql -h 10.1.1.1 -U zammad zammad --html  -c "${query}"  >>  ${reportfile}
